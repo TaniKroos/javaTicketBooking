@@ -41,6 +41,15 @@ public class User {
         }
     }
 
+    public Boolean cancelTicket(String ticketId){
+        for(Ticket ticket: ticketsBooked){
+            if(ticket.getTicketId().equals(ticketId)){
+                ticketsBooked.remove(ticket);
+                return true;
+            }
+        }
+        return false;
+    }
     
 
 }
