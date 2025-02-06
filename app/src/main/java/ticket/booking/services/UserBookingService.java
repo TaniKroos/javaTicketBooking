@@ -2,13 +2,16 @@ package ticket.booking.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 // import java.lang.runtime.ObjectMethods;
 import java.util.List;
 import java.util.Optional;
+import java.util.Scanner;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ticket.booking.entities.Train;
 import ticket.booking.entities.User;
 import ticket.booking.util.UserServiceUtil;
 
@@ -55,19 +58,49 @@ public class UserBookingService {
         user.printTickets();
     }
 
-    public Boolean cancelBooking(String ticketId) throws IOException{
-        if(!user.cancelTicket(ticketId)){
-            return Boolean.FALSE;
+    public Boolean cancelBooking( ) throws IOException{
+        Scanner s = new Scanner(System.in);
+        String ticketId = s.next();
+        s.close();
+        if (!user.cancelTicket(ticketId)) {
+            System.out.println("No ticket found with ID: " + ticketId);
+            return false;
         }
-        user.cancelTicket(ticketId);
         saveUserListToFile();
-        return Boolean.TRUE;
+        System.out.println("Ticket with ID " + ticketId + " has been canceled.");
+        return true;
     }
 
     public List<Train> getTrains(String source, String destination){
         try{
             TrainService trainService = new TrainService();
-            return trainService.getTrains(source, destination);
+            return trainService.searchTrains(source, destination);
+        }catch(IOException e){
+            return new ArrayList<>();
+        }
+    }
+    public List<List<Integer>> fetchSeats(Train train){
+        return train.getSeats();
+    }
+
+    public Boolean bookTrainSeat(Train train, int row, int seat) {
+        try{
+            TrainService trainService = new TrainService();
+            List<List<Integer>> seats = train.getSeats();
+            if (row >= 0 && row < seats.size() && seat >= 0 && seat < seats.get(row).size()) {
+                if (seats.get(row).get(seat) == 0) {
+                    seats.get(row).set(seat, 1);
+                    train.setSeats(seats);
+                    trainService.addTrain(train);
+                    return true;  
+                } else {
+                    return false;  
+                }
+            } else {
+                return false;  
+            }
+        }catch (IOException ex){
+            return Boolean.FALSE;
         }
     }
 }
